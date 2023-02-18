@@ -60,7 +60,7 @@ sudo vgdisplay -v #view complete setup - VG, PV, and LV
 ```
 sudo lsblk
 ```
-####Use mkfs.xfs to format the logical volumes with xfs filesystem.
+#### Use mkfs.xfs to format the logical volumes with xfs filesystem.
 ```
 sudo mkfs -t xfs /dev/nfs-vg/lv-opt
 sudo mkfs -t xfs /dev/nfs-vg/lv-apps
@@ -99,92 +99,100 @@ UUID=b003ab9c-57f8-40d2-8468-5cfcb2fb8b14  /mnt/opt xfs defaults 0
 sudo mount -a
 sudo systemctl daemon-reload  
 ```  
-   It is about time for us to install the NFS server. To do that, we need to install the nfs-utils package using the following command:
-   sudo yum -y update
-    sudo yum install -y nfs-utils
-    sudo systemctl start nfs-server.service
-    sudo systemctl enable nfs-server.service
-    sudo systemctl status nfs-server.service
+#### It is about time for us to install the NFS server. To do that, we need to install the nfs-utils package using the following 
+```
+sudo apt update
+sudo apt install nfs-kernel-server
+sudo systemctl start nfs-server.service
+sudo systemctl enable nfs-server.service
+sudo systemctl status nfs-server.service
+```
 
-    Now we need to set up permissions that will allow our web servers to read, write and execute files on NFS:
-    sudo chown -R nobody: /mnt/apps
-    sudo chown -R nobody: /mnt/logs
-    sudo chown -R nobody: /mnt/opt
-    sudo chmod -R 777 /mnt/apps
-    sudo chmod -R 777 /mnt/logs
-    sudo chmod -R 777 /mnt/opt
-  
-    Now we need to edit the /etc/exports file and add the following lines:
-    add the following:
+#### Now we need to set up permissions that will allow our web servers to read, write and execute files on NFS:
+```
+sudo chown -R nobody: /mnt/apps
+sudo chown -R nobody: /mnt/logs
+sudo chown -R nobody: /mnt/opt
+sudo chmod -R 777 /mnt/apps
+sudo chmod -R 777 /mnt/logs
+sudo chmod -R 777 /mnt/opt
+```  
+#### Now we need to edit the /etc/exports file and add the following lines:
+#### add the following:
+```
+/mnt/apps <NFS-Subnet-CIDR>(rw,sync,no_all_squash,no_root_squash)
+/mnt/logs <NFS-Subnet-CIDR>(rw,sync,no_all_squash,no_root_squash)
+/mnt/opt <NFS-Subnet-CIDR>(rw,sync,no_all_squash,no_root_squash)
+```
+#### command to export
+```
+sudo exportfs -arv
+```
 
-    /mnt/apps <NFS-Subnet-CIDR>(rw,sync,no_all_squash,no_root_squash)
-    /mnt/logs <NFS-Subnet-CIDR>(rw,sync,no_all_squash,no_root_squash)
-    /mnt/opt <NFS-Subnet-CIDR>(rw,sync,no_all_squash,no_root_squash)
+#### Now we need to check the port being used by NFS and open it using Security Groups(add a new inbound Rule):
+```
+rpcinfo -p | grep nfs
+```
+#### SET UP inbound Rule for NFS server
+#### Note: For the NFS server to be accessible from your client, you must also open the following ports: TCP 111, UDP 111, and UDP 2049 and NFS or TCP 2049.
+Source IP for all ports can be 0.0.0.0/32  or <subnet-cidr>/32
 
-     command to export
-     sudo exportfs -arv
+## Step 2: - Configure the web servers
+#### Create Ec2 Ubuntu Instance
+- Make sure this web server and NFS server are both running the same subnet
+- open port 80
+- Install apache webserver
+```
+sudo apt install apache2
+```
+- check apache2 status
+```
+sudo systemctl status apache2
+```
+- Installing NFS Utility tool for the Ubuntu NFS Client webserver
+```
+sudo apt install nfs-common ## this utility allows Web-server to connect with the NFS server
+```    
+- Create a directory called /var/www/ and target the NFS servers export for apps
+```
+sudo mkdir /var/www (might be created already by apache)
+```
+```
+sudo mount -t nfs -o rw,nosuid <NFS-Private-Server-IP>:/mnt/apps /var/www
+```
 
-     Now we need to check the port being used by NFS and open it using Security Groups(add a new inbound Rule):
-     command : rpcinfo -p | grep nfs
+- Verify that NFS was mounted successfully.
+```
+sudo df -h
+```
+#### Make sure that the changes will persist on the web server after reboot.
+```       
+sudo nano /etc/fstab
+```
+- add the following:
+```
+<Private-NFS-Server-IP>:/mnt/apps /var/www nfs defaults 0 0
+```
 
-    SET UP inbound Rule for NFS server
-    Note: For the NFS server to be accessible from your client, you must also open the following ports: TCP 111, UDP 111, and UDP 2049 and NFS 2049.
-    Source IP for all ports can be 0.0.0.0/32  or <subnet-cidr>/32
+Repeat the previous step for another 2 Web Servers.
+To verify that Apache files and directories are available on the Web Server in /var/www and also on the NFS server in /mnt/apps. If you see the same files – it means NFS is mounted correctly. You can try to create a new file touch test.txt from one server and check if the same file is accessible from other Web Servers.
+```
+sudo touch test.txt
+```
 
-Step 2: - Configure the database server
-      set up Ec2 Ubuntu Server
-      Open port 3306 for mysql 
-      install mysql
-      command : sudo apt install mysql-server
-      command sudo mysql
-              CREATE DATABASE tooling;
-              CREATE USER `myuser`@`%` IDENTIFIED BY 'password'; # the %  means this user can connect to the tooling database from any IP
-              GRANT ALL PRIVILEGES ON tooling.* TO 'myuser'@'%';
-              FLUSH PRIVILEGES;
-              SHOW DATABASES;
-
-            change the bind to 0.0.0.0 to make the database accessible
-            sudo nano /etc/mysql/mysql.conf.d/mysqld.cnf
-
-Step 3: - Configure the web servers
-       Create Ec2 Ubuntu Instance
-       Make sure this web server and NFS server are both running the same subnet
-       open port 80
-
-       Install apache webserver
-       command : sudo apt install apache2
-       check apache2 status
-       command : sudo systemctl status apache2
-       Install PHP and other configurations
-       command : sudo apt install php libapache2-mod-php php-mysql
-       Installing NFS Utility tool for the Ubuntu NFS Client webserver
-       command : sudo apt install nfs-common ## this allows Web-server to connect with the NFS server
-       
-       Create a directory called /var/www/ and target the NFS servers export for apps
-       sudo mkdir /var/www
-        sudo mount -t nfs -o rw,nosuid <NFS-Private-Server-IP>:/mnt/apps /var/www
- 
-        Verify that NFS was mounted successfully.
-        sudo df -h
-
-        Make sure that the changes will persist on the web server after reboot.
-        sudo nano /etc/fstab
-        add the following:
-        <Private-NFS-Server-IP>:/mnt/apps /var/www nfs defaults 0 0
-
-        Repeat the previous step for another 2 Web Servers.
-        To verify that Apache files and directories are available on the Web Server in /var/www and also on the NFS server in /mnt/apps. If you see the same files – it means NFS is mounted correctly. You can try to create a new file touch test.txt from one server and check if the same file is accessible from other Web Servers.
-        sudo touch test.txt
-
-        Now we need to locate the log folder for Apache on the web server and mount it to the NFS servers export for logs and make sure that the changes will persist on the web server after reboot on all the web servers.
-        sudo mkdir /var/log/apache
-        sudo mount -t nfs -o rw,nosuid <NFS-Server-IP>:/mnt/logs /var/log/apache
-
-        and then add the following to /etc/fstab:
-        sudo nano /etc/fstab
-        add the following:
-        <NFS-Server-IP>:/mnt/logs /var/log/apache nfs defaults 0 0
-        
+Now we need to locate the log folder for Apache on the web server and mount it to the NFS servers export for logs and make sure that the changes will persist on the web server after reboot on all the web servers.
+```
+sudo mkdir /var/log/apache
+sudo mount -t nfs -o rw,nosuid <NFS-Server-IP>:/mnt/logs /var/log/apache
+```
+and then add the following to /etc/fstab:
+```
+sudo nano /etc/fstab
+```
+-add the following:
+```
+<NFS-Server-IP>:/mnt/logs /var/log/apache nfs defaults 0 0
+```        
 
 
 
