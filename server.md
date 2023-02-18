@@ -9,9 +9,9 @@ Configuring Apache with a LoadBAlancer and DEVOPS TOOLING WEBSITE SOLUTION with 
     - Create an EC2 Ubuntu VM<br>
     - create 4 EBS volume and attach it to the NFS Server (make sure the ebs volumes are in th same availability zone with NFS - server)<br>
     - SSH into the NFS server<br>
-    ```
+```
     ssh -i <aws-key-pair> ubuntu@<privatw-ip-address>
-    ```
+```
     - view the list of the attached disks<br>
 
             command : `lsblk`  <br>
