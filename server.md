@@ -35,25 +35,31 @@ sudo pvcreate /dev/xvdf1
 ```
 - do same for the rest of the disks
 
-#####Now we need to verify that our physical volume has been created successfully using the following command:
+##### Now we need to verify that our physical volume has been created successfully using the following command:
 ```
 sudo pvs
 ```
-  Now we need to create a volume group using the vgcreate utility. We will use the 3 disks we created earlier to create a volume group called NFS-vg.
+#### Now we need to create a volume group using the vgcreate utility. We will use the 3 disks we created earlier to create a volume group called NFS-vg.
+```
   sudo vgcreate nfs-vg /dev/nvme1n1 /dev/nvme2n1 /dev/nvme3n1
-
-  Use lvcreate utility to create 3 logical volumes. lv-opt lv-apps, and lv-logs. The lv-apps: would be used by the webservers, The lv-logs: would be used by web server logs, and the lv-opt: would be used by the Jenkins server(later in thr project)
-  sudo lvcreate -L 14G -n lv-opt nfs-vg
-  sudo lvcreate -L 14G -n lv-apps nfs-vg
-  sudo lvcreate -L 10G -n lv-logs nfs-vg
-
-  Now we need to verify that our logical volumes have been created successfully using the following command:
-  command : sudo lvs
-
-  Verify the entire setup
-  sudo vgdisplay -v #view complete setup - VG, PV, and LV
-  sudo lsblk
-
+```
+### Use lvcreate utility to create 3 logical volumes. lv-opt lv-apps, and lv-logs. The lv-apps: would be used by the webservers, The lv-logs: would be used by web server logs, and the lv-opt: would be used by the Jenkins server(later in thr project)
+```
+sudo lvcreate -L 14G -n lv-opt nfs-vg
+sudo lvcreate -L 14G -n lv-apps nfs-vg
+sudo lvcreate -L 10G -n lv-logs nfs-vg
+```
+#### Now we need to verify that our logical volumes have been created successfully using the following command:
+```
+sudo lvs
+```
+#### Verify the entire setup
+```
+sudo vgdisplay -v #view complete setup - VG, PV, and LV
+```  
+```
+sudo lsblk
+```
   Use mkfs.xfs to format the logical volumes with xfs filesystem.
   sudo mkfs -t xfs /dev/nfs-vg/lv-opt
   sudo mkfs -t xfs /dev/nfs-vg/lv-apps
