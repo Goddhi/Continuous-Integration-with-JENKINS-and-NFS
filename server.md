@@ -14,9 +14,8 @@ Configuring Apache with a LoadBAlancer and DEVOPS TOOLING WEBSITE SOLUTION with 
         - Create  partions xvdf disk <br>
 
              sudo gdisk /dev/xvdf
-             
-        - do same for the rest of the disks <br>
 
+       - do same for the rest of the disks <br>
         - Then install the lvm2 package using the following command: <br>
             command : `sudo yum install lvm2`
 
