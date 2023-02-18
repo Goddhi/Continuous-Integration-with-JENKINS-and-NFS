@@ -4,9 +4,9 @@
 
 Configuring Apache with a LoadBAlancer and DEVOPS TOOLING WEBSITE SOLUTION with NFS
 
-<h3>Step 1</h3> 
-  <h4>Prepare NFS Server</h4> <br>
-    - Create an EC2 Ubuntu VM<br>
+## Step 1
+### Prepare NFS Server
+    - Create an EC2 Ubuntu VM
     - create 4 EBS volume and attach it to the NFS Server (make sure the ebs volumes are in th same availability zone with NFS - server)<br>
     - SSH into the NFS server
 ```
