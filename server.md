@@ -12,7 +12,9 @@ Configuring Apache with a LoadBAlancer and DEVOPS TOOLING WEBSITE SOLUTION with 
         - view the list of the attached disks<br>
             command : `lsblk`  <br>
         - Create  partions xvdf disk <br>
-            command : `sudo gdisk /dev/xvdf`,<br>
+
+             sudo gdisk /dev/xvdf
+             
         - do same for the rest of the disks <br>
 
         - Then install the lvm2 package using the following command: <br>
