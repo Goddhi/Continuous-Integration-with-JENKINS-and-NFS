@@ -1,14 +1,14 @@
 
 
-<h2>CONTINUOS INTEGRATION with JENKINS and NFS</h2>
+# CONTINUOS INTEGRATION with JENKINS and NFS</h2>
 
-Configuring Apache with a LoadBAlancer and DEVOPS TOOLING WEBSITE SOLUTION with NFS
+### Configuring Apache with a LoadBAlancer and DEVOPS TOOLING WEBSITE SOLUTION with NFS
 
 ## Step 1
 ### Prepare NFS Server
-    - Create an EC2 Ubuntu VM
-    - create 4 EBS volume and attach it to the NFS Server (make sure the ebs volumes are in th same availability zone with NFS - server)<br>
-    - SSH into the NFS server
+- Create an EC2 Ubuntu VM
+- create 4 EBS volume and attach it to the NFS Server (make sure the ebs volumes are in th same availability zone with NFS - server)
+- SSH into the NFS server
 ```
     ssh -i "aws-key-pair" ubuntu@"privatw-ip-address"
 ```
