@@ -60,36 +60,45 @@ sudo vgdisplay -v #view complete setup - VG, PV, and LV
 ```
 sudo lsblk
 ```
-  Use mkfs.xfs to format the logical volumes with xfs filesystem.
-  sudo mkfs -t xfs /dev/nfs-vg/lv-opt
-  sudo mkfs -t xfs /dev/nfs-vg/lv-apps
-  sudo mkfs -t xfs /dev/nfs-vg/lv-logs
-
-  Create a directory for each of the logical volumes.
-  sudo mkdir -p /mnt/apps
-  sudo mkdir -p /mnt/logs
-  sudo mkdir -p /mnt/opt
-
-  Mount the logical volumes to the directories we created earlier.
-  sudo mount /dev/nfs-vg/lv-apps /mnt/apps
-  sudo mount /dev/nfs-vg/lv-logs /mnt/logs
-  sudo mount /dev/nfs-vg/lv-opt /mnt/opt
-
-  Verify that the logical volumes have been mounted successfully.
-  sudo df -h
-
-  Now we need to make the mount persistent. To do that, we need to edit the /etc/fstab file and add the following lines:
-  sudo blkid  (Copy the mount points UUID)
-
-  command : sudo nano /etc/fstab (paste the content e.g like the one below)
-      UUID=45cd79b1-4f73-4caa-8a72-1a9e7efb3a66  /mnt/apps xfs defaults 0 0
-    UUID=bc2756e9-b0d8-4868-b1b3-d76e3af9614a  /mnt/logs xfs defaults 0 0
-    UUID=b003ab9c-57f8-40d2-8468-5cfcb2fb8b14  /mnt/opt xfs defaults 0 
+####Use mkfs.xfs to format the logical volumes with xfs filesystem.
+```
+sudo mkfs -t xfs /dev/nfs-vg/lv-opt
+sudo mkfs -t xfs /dev/nfs-vg/lv-apps
+sudo mkfs -t xfs /dev/nfs-vg/lv-logs
+```
+#### Create a directory for each of the logical volumes.
+```
+sudo mkdir -p /mnt/apps
+sudo mkdir -p /mnt/logs
+sudo mkdir -p /mnt/opt
+```
+#### Mount the logical volumes to the directories we created earlier.
+```
+sudo mount /dev/nfs-vg/lv-apps /mnt/apps
+sudo mount /dev/nfs-vg/lv-logs /mnt/logs
+sudo mount /dev/nfs-vg/lv-opt /mnt/opt
+```
+#### Verify that the logical volumes have been mounted successfully.
+```
+sudo df -h
+```
+#### Now we need to make the mount persistent. To do that, we need to edit the /etc/fstab file and add the following lines:
+```
+sudo blkid  (Copy the mount points UUID)
+```
+```
+sudo nano /etc/fstab
+```
+(paste the content e.g like the one below)
+UUID=45cd79b1-4f73-4caa-8a72-1a9e7efb3a66  /mnt/apps xfs defaults 0 0
+UUID=bc2756e9-b0d8-4868-b1b3-d76e3af9614a  /mnt/logs xfs defaults 0 0
+UUID=b003ab9c-57f8-40d2-8468-5cfcb2fb8b14  /mnt/opt xfs defaults 0 
     
-   Now we need to test the configurations and reload the daemon.
-   command : sudo mount -a
-   command : sudo systemctl daemon-reload  
-  
+#### Now we need to test the configurations and reload the daemon.
+```
+sudo mount -a
+sudo systemctl daemon-reload  
+```  
    It is about time for us to install the NFS server. To do that, we need to install the nfs-utils package using the following command:
    sudo yum -y update
     sudo yum install -y nfs-utils
