@@ -10,16 +10,16 @@ Configuring Apache with a LoadBAlancer and DEVOPS TOOLING WEBSITE SOLUTION with 
         - create 4 EBS volume and attach it to the NFS Server (make sure the ebs volumes are in th same availability zone with NFS - server)<br>
         - SSH into the NFS server<br>
         - view the list of the attached disks<br>
-            command : `lsblk`  
-        - Create  partions xvdf disk  
-            command : `sudo gdisk /dev/xvdf`
-        - do same for the rest of the disks
+            command : `lsblk`  <br>
+        - Create  partions xvdf disk <br>
+            command : `sudo gdisk /dev/xvdf`,<br>
+        - do same for the rest of the disks <br>
 
-  Then install the lvm2 package using the following command:
-  command : sudo yum install lvm2
+        - Then install the lvm2 package using the following command: <br>
+            command : `sudo yum install lvm2`
 
-  and then run the following command to check for available partitions:
-  command : sudo lvmdiskscan
+        - and then run the following command to check for available partitions: <br>
+             command : `sudo lvmdiskscan`
 
   Create Physical Volume for xvdf1
   command : sudo pvcreate /dev/xvdf1
