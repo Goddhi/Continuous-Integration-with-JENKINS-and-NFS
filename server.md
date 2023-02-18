@@ -10,26 +10,35 @@
 - create 4 EBS volume and attach it to the NFS Server (make sure the ebs volumes are in th same availability zone with NFS - server)
 - SSH into the NFS server
 ```
-    ssh -i "aws-key-pair" ubuntu@"privatw-ip-address"
+    ssh -i "aws-key-pair" ubuntu@"private-ip-address"
 ```
 
 - view the list of the attached disks<br>
-            command : `lsblk`  <br>
-        - Create  partions xvdf disk <br>
-             sudo gdisk /dev/xvdf
-       - do same for the rest of the disks <br>
-        - Then install the lvm2 package using the following command: <br>
-            command : `sudo yum install lvm2`
-        - and then run the following command to check for available partitions: <br>
-             command : `sudo lvmdiskscan`
+``` 
+lsblk
+``` 
+- Create  partions xvdf disk <br>
+```
+sudo gdisk /dev/xvdf
+- do same for the rest of the disks <br>
+- Then install the lvm2 package using the following command: <br>
+```
+sudo yum install lvm2`
+- and then run the following command to check for available partitions: <br>
+```
+sudo lvmdiskscan
+```
 
-  Create Physical Volume for xvdf1
-  command : sudo pvcreate /dev/xvdf1
-  do same for the rest of the disks
+#### Create Physical Volume for xvdf1
+```
+sudo pvcreate /dev/xvdf1
+```
+- do same for the rest of the disks
 
-  Now we need to verify that our physical volume has been created successfully using the following command:
-  command : sudo pvs
-
+#####Now we need to verify that our physical volume has been created successfully using the following command:
+```
+sudo pvs
+```
   Now we need to create a volume group using the vgcreate utility. We will use the 3 disks we created earlier to create a volume group called NFS-vg.
   sudo vgcreate nfs-vg /dev/nvme1n1 /dev/nvme2n1 /dev/nvme3n1
 
