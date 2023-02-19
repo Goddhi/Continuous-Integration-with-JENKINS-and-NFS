@@ -283,23 +283,112 @@ You can try to curl your Web Servers from LB locally curl http://Web1 or curl ht
 Remember, this is only internal configuration and it is also local to your LB server, these names will neither be ‘resolvable’ from other servers internally nor from the Internet.
 
 
+## Configuring Jenkins 
+- Create an Ubuntu 20.04 EC2 Instance
+- By default Jenkins server uses TCP port 8080 - open it by creating a new inbound rule in your EC2 security group.
+- Install JDK (Java Development Kit) on the Jenkins server. Since Jenkins is a Java-based application
+```
+sudo apt update
+sudo apt install default-jdk-headless
+```
+- Install Jenkins
+```
+wget -q -O - https://pkg.jenkins.io/debian-stable/jenkins.io.key | sudo apt-key add -
+sudo sh -c 'echo deb https://pkg.jenkins.io/debian-stable binary/ > \
+    /etc/apt/sources.list.d/jenkins.list'
+sudo apt update
+sudo apt-get install jenkins
+```
+- We have to make sure that Jenkins is running
+```
+sudo systemctl status jenkins
+```
+- Perform initial Jenkins setup. From your browser access.
+```
+http://<Jenkins-Server-Public-IP-Address>:8080
+```
+- Note: You will be prompted to provide a default admin password.
+- To get retrieve the default admin password, run the following command.
+```
+sudo cat /var/lib/jenkins/secrets/initialAdminPassword
+```
+- Then you will be asked which plugins to install - choose suggested plugins.
+- Once plugin installation is done - create an admin user and you will get your Jenkin server address or skip to continue using the current login details
+
+### Configure Jenkins to retrieve source code from GitHub using Webhooks.
+- Here we will configure Jenkins to automatically retrieve source code from GitHub whenever there is a change in the source code. This would be done by using **Webhooks**
+- Enable webhooks in your GitHub repository settings. Go to your GitHub repository and click on Settings > Webhooks > Add webhooks
+- Go to Jenkins web console, click "New Item" and create a Freestyle project
+- To connect your GitHub repository to Jenkins, you will need to provide its URL, just copy the URL from your GitHub repository
+- In your Jenkins project, the configurations, choose Git repository, provide the URL of your GitHub repository and click on "Add" to add the credentials, so Jenkins can access your GitHub repository
+- Save the configurations and let's try to run the build. Click on "Build Now" and you will see the build is successful.
+
+You can open the build and check in "Console Output" if it has run successfully.
+
+If so – congratulations! You have just made your very first Jenkins build!
+
+Note: This build does not produce anything and it runs only when we trigger it manually. Let us fix it.
+
+- In your Jenkins project, click on "Configure" your job/project and add these two configurations
+
+- Build Triggers > click Github hook trigger for GITscm polling. Build when a change is pushed to GitHub, triggering the job from the GitHub webhook:
+
+- Configure "Post-build Actions" to archive all the files – files resulting from a build are called "artifacts". in  the "files to archive" box type ** means all files of the build
+
+- Now, let's go ahead and make some changes in any file in your GitHub repository (e.g. README.MD file) and push the changes to the master branch.
+
+-We should see that a new build has been launched automatically (by webhook) and you can see its results – artifacts, saved on the Jenkins server.
+
+
+
+
 
 How to fix HTTP ERROR 403 No valid crumb was included in the request in JENKINS
 SOLUTION
 There is an option in "Manage Jenkins" the "Global Security Settings" that "Enables the Compatibilty Mode for proxies". This helped with my issue.
 Manage Jenkins > Configure Global Settings > CSRF Protection > Enable proxy compatibility
 
+Note: You have now configured an automated Jenkins job that receives files from GitHub by webhook trigger (this method is considered as ‘push’ because the changes are being ‘pushed’ and file transfer is initiated by GitHub). There are also other methods: trigger one job (downstream) from another (upstream), poll GitHub periodically and others.
+
+- By default, the artifacts are stored on Jenkins server locally
+```
+ ls /var/lib/jenkins/jobs/tooling_github/builds/<build_number>/archive/
+```
+## Configure Jenkins to copy files to the NFS server via ssh.
+
+- Now we have our artifacts stored locally on the Jenkins server, the next step is to copy them to the NFS server to the /mnt/apps directory.
+
+- As Jenkins is highly extendable and can be configured to do almost anything, we will need a plugin that is called "Publish over SSH" to copy files to the NFS server.
+
+- Install "Publish over SSH" plugin. Go to Jenkins web console, click on "Manage Jenkins" > "Manage Plugins" > "Available" > "Publish over SSH" > "Install without restart"
+
+
+- Configure the job/project to copy artifacts over to the NFS server. On the main dashboard select "Manage Jenkins" and choose the "Configure System" menu item. Scroll down to Publish over SSH plugin configuration section and configure it to be able to connect to your NFS server. The configuration is pretty straightforward, you just need to provide the following details:
+
+- Provide a private key (contents of .pem file that you use to connect to NFS server via SSH/Putty) Arbitrary name Hostname – can be private IP address of your NFS server Username – ubuntu (since NFS server is based on EC2 with Ubuntu) Remote directory /mnt/apps since our Web Servers use it as a mounting point to retrieve files from the NFS server
+
+- And then save the configurations.
 
 
 
+Note: Test the configuration and make sure the connection returns Success. Remember, that TCP port 22 on the NFS server must be open to receive SSH connections.
+
+- Now open the Jenkins project configuration page and add another one "Post-build Actions" to copy the artifacts to the NFS server. You are selecting the option "Send build artifacts over SSH".
+
+- Now configure it to send all files produced by the build into our previously defined remote directory /mnt/apps. . In our case we want to copy all files and directories – so we use ** and then save the configurations.
+
+- Now, let's go ahead and make some changes in any file in your GitHub repository (e.g. README.MD file) and push the changes to the master branch. Webhook will trigger the build and the artifacts will be copied to the NFS server.
+
+- To make sure that the files in /mnt/apps have been udated – connect via SSH/Putty to your NFS server and check README.MD file
+
+```
+cat /mnt/apps/README.md
+```
+
+you can also check and verify the webservers to see if the files are located in the public position mounted /var/www
+
+#### Now we have just implemented  Continous Integration solution using Jenkins CI
 
 
 
-
-
-
-
-sudo mount -t nfs -o rw,nosuid 172.31.19.51:/mnt/apps /var/www
-172.31.19.51:/mnt/apps /var/www nfs defaults 0 0
-
-## 29a54e1aeb544ec6a63e678a981a44f6
+ <!-- 29a54e1aeb544ec6a63e678a981a44f6 -->
