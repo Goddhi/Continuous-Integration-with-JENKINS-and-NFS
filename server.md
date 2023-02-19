@@ -385,7 +385,7 @@ Note: Test the configuration and make sure the connection returns Success. Remem
 cat /mnt/apps/README.md
 ```
 
-you can also check and verify the webservers to see if the files are located in the public position mounted /var/www
+you can also check and verify the webservers to see if the files are located in the mounted directory (/var/www)
 
 #### Now we have just implemented  Continous Integration solution using Jenkins CI
 
